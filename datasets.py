@@ -33,6 +33,47 @@ class KonIQ10kDataset(Dataset):
                    (self.scores_frame['MOS'].max() - self.scores_frame['MOS'].min())
         
         return image, torch.tensor([mos_score], dtype=torch.float)
+    
+
+#FaceIQA dataset is defined here    
+class FaceIQADataset(Dataset):
+    def __init__(self, csv_path, root_dir):
+        """
+        Args:
+            csv_path (str): Path to the CSV file with annotations.
+            root_dir (str): Root directory for all face images (i.e., where Face_GT/ is located).
+        """
+        self.data_frame = pd.read_csv(csv_path)
+        self.root_dir = root_dir
+
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+
+    def __len__(self):
+        return len(self.data_frame)
+
+    def __getitem__(self, idx):
+        row = self.data_frame.iloc[idx]
+        subject = row['SUBJECTNAMES'].strip()
+        distance = row['DISTANCE'].strip()
+        pose = row['POSE'].strip()
+        filename = row['FILENAME'].strip()
+        
+        # Construct full image path
+        img_path = os.path.join(self.root_dir, subject, distance, pose, filename)
+        
+        image = Image.open(img_path).convert('RGB')
+        image = self.transform(image)
+
+        # Assuming "Final score" is the target quality label
+        final_score = row['Final score']
+        final_score = 0.0 if pd.isna(final_score) else final_score
+        
+        return image, torch.tensor([final_score], dtype=torch.float)
 
 # Dataset configurations
 DATASET_CONFIGS = {
@@ -43,6 +84,10 @@ DATASET_CONFIGS = {
     'kadid10k': {
         'csv_path': '/path/to/kadid10k/csv',
         'image_dir': '/path/to/kadid10k/images'
+    },
+    'faceiqa': {
+    'csv_path': '/home/ug/Ganesh/Thesis/CBAM/downloads/dataset/Face_GT/sorted_file.csv',
+    'image_dir': '/home/ug/Ganesh/Thesis/CBAM/downloads/dataset/Face_GT'
     }
 }
 
@@ -56,6 +101,8 @@ def get_dataset(dataset_name):
     config = DATASET_CONFIGS[dataset_name]
     if dataset_name == 'koniq10k':
         return KonIQ10kDataset(config['csv_path'], config['image_dir'])
+    elif dataset_name == 'faceiqa':
+        return FaceIQADataset(config['csv_path'], config['image_dir'])
     # Add other dataset classes as needed
     
     raise ValueError(f"Dataset {dataset_name} not implemented")
