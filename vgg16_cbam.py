@@ -74,8 +74,21 @@ class VGG16_CBAM_IQA(nn.Module):
         # Global Average Pooling
         self.global_avg_pool = nn.AdaptiveAvgPool2d(1)  # Output size will be (512, 1, 1)
         
-        # Final regression layer (linear activation)
-        self.regression_layer = nn.Linear(512, 1)  # Directly use the output from GAP
+        # Fully connected layers to extract features: 512 -> 128 -> 64 -> 32
+        self.fc_layers = nn.Sequential(
+            nn.Linear(512, 128),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.4),
+            nn.Linear(128, 64),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.4),
+            nn.Linear(64, 32),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.4)
+        )
+        
+        # Final regression layer mapping the 32-dimensional feature to a single output
+        self.regression_layer = nn.Linear(32, 1)
         
         # Add logistic mapping layer
         self.logistic_mapping = LogisticMapping()
@@ -110,8 +123,9 @@ class VGG16_CBAM_IQA(nn.Module):
                 cbam_idx += 1
         
         x = self.global_avg_pool(x)  # Apply Global Average Pooling
-        x = torch.flatten(x, 1)  # Flatten to 1D vector
-        x = self.regression_layer(x)  # Directly use the output for regression
+        x = torch.flatten(x, 1)      # Flatten to 1D vector (size: 512)
+        x = self.fc_layers(x)         # Pass through fc layers to get 32-D features
+        x = self.regression_layer(x)  # Final regression layer
         
         # Apply logistic mapping
         x = self.logistic_mapping(x)
