@@ -36,7 +36,7 @@ def calculate_metrics(pred, target):
     srcc = spearmanr(pred, target)[0]
     return rmse, plcc, srcc
 
-def train_model(regression_type='simple', dataset_name='koniq10k'):
+def train_model(regression_type='ridge', dataset_name='faceiqa'):
     log_dir = 'training_logs'
     os.makedirs(log_dir, exist_ok=True)
     model_dir = f'models_{regression_type}'
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', 
                        type=str, 
                        default='koniq10k',
-                       choices=['koniq10k', 'kadid10k'],
+                       choices=['koniq10k', 'faceiqa' ,'kadid10k'],
                        help='Dataset to use for training')
     
     args = parser.parse_args()
