@@ -32,6 +32,8 @@ def calculate_metrics(pred, target):
     pred = pred.flatten()
     target = target.flatten()
     rmse = np.sqrt(np.mean((pred - target) ** 2))
+    if np.std(pred) < 1e-6 or np.std(target) < 1e-6:
+    plcc, srcc = 0.0, 0.0
     plcc = pearsonr(pred, target)[0]
     srcc = spearmanr(pred, target)[0]
     return rmse, plcc, srcc
