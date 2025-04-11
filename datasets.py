@@ -70,7 +70,7 @@ class FaceIQADataset(Dataset):
         image = self.transform(image)
 
         # Assuming "Final score" is the target quality label
-        final_score = row['Final score']
+        final_score = row['NIQE']
         final_score = 0.0 if pd.isna(final_score) else final_score
         
         return image, torch.tensor([final_score], dtype=torch.float)
