@@ -86,8 +86,8 @@ DATASET_CONFIGS = {
         'image_dir': '/path/to/kadid10k/images'
     },
     'faceiqa': {
-    'csv_path': '/home/ug/Ganesh/Thesis/CBAM/downloads/dataset/Face_GT/normalized_output.csv',
-    'image_dir': '/home/ug/Ganesh/Thesis/CBAM/downloads/dataset/Face_GT'
+    'csv_path': '/content/Dataset/Face_iqa/normalized_output.csv',
+    'image_dir': '/content/Dataset/Face_iqa'
     }
 }
 
